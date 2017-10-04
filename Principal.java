@@ -1,8 +1,6 @@
 package representar;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
 
 import javax.swing.JOptionPane;
 
@@ -35,14 +33,19 @@ public class Principal extends Shell {
 	
 	public TableItem it; 
 	
-	public static boolean orientado;
-	public static boolean valorado;
-	public static ArrayList<String> vertices = new ArrayList<String>();
-	public static ArrayList<ArrayList<String>> arestas = new ArrayList<ArrayList<String>>();
-	public static int[][] matrizAd;
-	public static int[][] matrizInc;
-	public static ArrayList<ArrayList<String>> ListaAd;
-
+//	public static boolean orientado;
+//	public static boolean valorado;
+//	public static ArrayList<String> vertices = new ArrayList<String>();
+//	public static ArrayList<ArrayList<String>> arestas = new ArrayList<ArrayList<String>>();
+//	public static int[][] matrizAd;
+//	public static int[][] matrizInc;
+//	public static ArrayList<ArrayList<String>> ListaAd;
+	public static Grafo g = new Grafo();
+	private Label label_1;
+	private Button btnDijkstra;
+	private Button btnBellmanford;
+	private Button btnFloydwarshall;
+	
 
 	/**
 	 * Launch the application.
@@ -87,7 +90,7 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(btnSim.getSelection()){
-					orientado = true;
+					Grafo.setOrientado(true);
 			}
 				if((btnSim.getSelection() || btnNo.getSelection()) && (btnSim2.getSelection() || btnNo2.getSelection())){
 					btnVertice.setEnabled(true);
@@ -104,7 +107,7 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(btnNo.getSelection()){
-					orientado = true;
+					Grafo.setOrientado(true);
 			}
 				if((btnSim.getSelection() || btnNo.getSelection()) && (btnSim2.getSelection() || btnNo2.getSelection())){
 					btnVertice.setEnabled(true);
@@ -125,7 +128,8 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(btnSim2.getSelection()){
-					valorado = true;
+					Grafo.setValorado(true);
+					btnDijkstra.setEnabled(true);
 			}
 				if((btnSim.getSelection() || btnNo.getSelection()) && (btnSim2.getSelection() || btnNo2.getSelection())){
 					btnVertice.setEnabled(true);
@@ -141,7 +145,8 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if(btnNo2.getSelection()){
-					valorado = false;	
+					Grafo.setValorado(false);	
+					btnDijkstra.setEnabled(false);
 			}
 				if((btnSim.getSelection() || btnNo.getSelection()) && (btnSim2.getSelection() || btnNo2.getSelection())){
 					btnVertice.setEnabled(true);
@@ -182,75 +187,69 @@ public class Principal extends Shell {
 		tblclmnNewColumn_4.setText("Valor");
 		
 		
-		// Adicionar Vértice -------------------------------------------------------------------------------------
+		// Adicionar Vértice -----------------------------------------------------------------------------------------------------------------
 		btnVertice = new Button(this, SWT.NONE);
 		btnVertice.setEnabled(false);
 		btnVertice.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String ver = JOptionPane.showInputDialog("Vértice: ");
-				if(ver.isEmpty()){
-					JOptionPane.showMessageDialog(null, "Valor inválido");
+				if(ver != null && !ver.equals("")){
+					g.addVertice(ver);
 				}else{
-				vertices.add(ver);
-				
+					JOptionPane.showMessageDialog(null, "Valor inválido");
+				}
 				btnSim.setEnabled(false);
 				btnSim2.setEnabled(false);
 				btnNo.setEnabled(false);
 				btnNo2.setEnabled(false);
 	
 				preencheTabela1();
-			}
+			
 			}
 		});
 		btnVertice.setBounds(20, 193, 141, 33);
 		btnVertice.setText("Adicionar V\u00E9rtice");
 		
 		
-		//Adicionar Aresta ------------------------------------------------------------------------------------
+		//Adicionar Aresta -----------------------------------------------------------------------------------------------------------
 		btnAresta = new Button(this, SWT.NONE);
 		btnAresta.setEnabled(false);
 		btnAresta.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				ArrayList<String> arestaTemp = new ArrayList<String>();	
-				String ar1;
-				String ar2;	
-					ar1 = JOptionPane.showInputDialog("Vértice 1: ");	
-					if(ar1.isEmpty()){
-						JOptionPane.showMessageDialog(null, "Valor inválido");
-					}else{		
-						ar2 = JOptionPane.showInputDialog("Vértice 2: ");
-						if(ar2.isEmpty()){
-							JOptionPane.showMessageDialog(null, "Valor inválido");
-						}else{
-							arestaTemp.add(ar1);
-							arestaTemp.add(ar2);	
-							if(valorado){
-								String valor = JOptionPane.showInputDialog("Valor: ");
-								if(!valor.isEmpty()){
-								arestaTemp.add(valor);
-								}else{
-									arestaTemp.add("0");
-								}
-							}else{					
-								arestaTemp.add(null);
-								}	
-							
-							arestas.add(arestaTemp);
-							matrizAdjacencia();
-							listaAdjacencia();
-							MatrizIncidencia();
-							
-							btnSim.setEnabled(false);
-							btnSim2.setEnabled(false);
-							btnNo.setEnabled(false);
-							btnNo2.setEnabled(false);
-							
-							preencheTabela2();
-							}
-					}				
+				ArrayList<Integer> arestaTemp = new ArrayList<Integer>();
+				String aresta1;	
+				String aresta2;	
+				int valor = 1;
+				boolean origem = false;
 				
+				aresta1 = JOptionPane.showInputDialog(g.ListarVertices(origem, false));
+				origem = true;			
+				aresta2 = JOptionPane.showInputDialog(g.ListarVertices(origem, false));	
+				
+				if(Grafo.isValorado()){
+					String temp = JOptionPane.showInputDialog("Valor: ");
+					valor = temp.isEmpty()? 1: Integer.parseInt(temp);
+				}
+				valor= Grafo.isValorado()? valor : 1;		
+				
+				arestaTemp.add(Integer.parseInt(aresta1)-1);
+				arestaTemp.add(Integer.parseInt(aresta2)-1);	
+				arestaTemp.add(valor);
+				
+				g.addAresta(arestaTemp);
+				
+//							matrizAdjacencia();
+//							listaAdjacencia();
+//							MatrizIncidencia();
+							
+				btnSim.setEnabled(false);
+				btnSim2.setEnabled(false);
+				btnNo.setEnabled(false);
+				btnNo2.setEnabled(false);							
+				preencheTabela2();
+							
 			}
 		});
 		btnAresta.setText("Adicionar Aresta");
@@ -264,16 +263,18 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String msg = "";
-				if(valorado){
+				ArrayList<ArrayList<Integer>> arestas = new ArrayList<ArrayList<Integer>>();
+				arestas = Grafo.getListaArestas();
+				if(Grafo.isValorado()){
 					msg += "Vértice 1    |    Vértice 2    |    Valor    |\n";
-					for (ArrayList<String> arest : arestas) {
-						msg+=  "         "+arest.get(0)+"          |          "+arest.get(1)+"            |      "+arest.get(2)+ "      |\n";
+					for (ArrayList<Integer> arest : arestas) {
+						msg+=  "         "+Grafo.getVertices().get(arest.get(0))+"          |          "+Grafo.getVertices().get(arest.get(1))+"            |      "+arest.get(2)+ "      |\n";
 						msg+= "_______________________________\n";
 					}
 				}else{
 					msg += "Vértice 1    |    Vértice 2    |\n";
-					for (ArrayList<String> arest : arestas) {
-						msg+=  "         "+arest.get(0)+"          |          "+arest.get(1)+"            |\n";
+					for (ArrayList<Integer> arest : arestas) {
+						msg+=  "         "+Grafo.getVertices().get(arest.get(0))+"          |          "+Grafo.getVertices().get(arest.get(1))+"            |\n";
 						msg+= "_______________________\n";
 					}
 				}
@@ -288,11 +289,13 @@ public class Principal extends Shell {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String msg = " ";
+				ArrayList<ArrayList<ArrayList<Integer>>> ListaAd = new ArrayList<ArrayList<ArrayList<Integer>>>();
+				ListaAd = Grafo.getListaAd();
 				int x = 0;
-				for (ArrayList<String> vert : ListaAd) {
-					msg+= vertices.get(x)+" > ";
-					for (String vert2 : vert) {
-						msg += vert2+" | ";
+				for (ArrayList<ArrayList<Integer>> vert : ListaAd) {
+					msg+= Grafo.getVertices().get(x)+" > ";
+					for (ArrayList<Integer> vert2 : vert) {
+						msg += Grafo.getVertices().get(vert2.get(0))+" | ";
 					}
 					msg+= "\n";
 					x++;
@@ -309,14 +312,14 @@ public class Principal extends Shell {
 			public void widgetSelected(SelectionEvent e) {
 				String msg = "   ";
 				
-				for(int i = 0; i < vertices.size(); i++){
-					msg += vertices.get(i)+" | ";
+				for(int i = 0; i < Grafo.getVertices().size(); i++){
+					msg += Grafo.getVertices().get(i)+" | ";
 				}
 				msg+= "\n";
-				for(int i = 0; i < vertices.size(); i++){
-					msg += vertices.get(i)+" ";
-					for(int j = 0; j < vertices.size(); j++){
-						msg += matrizAd[i][j]+" | ";			
+				for(int i = 0; i < Grafo.getVertices().size(); i++){
+					msg += Grafo.getVertices().get(i)+" ";
+					for(int j = 0; j < Grafo.getVertices().size(); j++){
+						msg += Grafo.getMatrizAd().get(i).get(j)+" | ";			
 					}
 					msg += "\n";
 				}
@@ -332,14 +335,14 @@ public class Principal extends Shell {
 			public void widgetSelected(SelectionEvent e) {
 				String msg = "   ";
 				
-				for(int i = 0; i < arestas.size(); i++){
+				for(int i = 0; i < Grafo.getListaArestas().size(); i++){
 					msg += "e"+(i+1)+" | ";
 				}
 				msg+= "\n";
-				for(int i = 0; i < vertices.size(); i++){
-					msg += vertices.get(i)+"  ";
-					for(int j = 0; j < arestas.size(); j++){
-						msg += matrizInc[i][j]+"  |  ";			
+				for(int i = 0; i < Grafo.getVertices().size(); i++){
+					msg += Grafo.getVertices().get(i)+"  ";
+					for(int j = 0; j < Grafo.getMatrizInc().size(); j++){
+						msg += Grafo.getMatrizInc().get(j).get(i)+"  |  ";			
 					}
 					msg += "\n";
 				}
@@ -355,8 +358,7 @@ public class Principal extends Shell {
 		btnLimparGrafo.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				vertices = new ArrayList<String>();
-				arestas = new ArrayList<ArrayList<String>>();
+				g.LimpaGrafo();
 				preencheTabela1();
 				preencheTabela2();
 				
@@ -370,6 +372,42 @@ public class Principal extends Shell {
 		});
 		btnLimparGrafo.setBounds(20, 339, 75, 25);
 		btnLimparGrafo.setText("Limpar Grafo");
+		
+		label_1 = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
+		label_1.setBounds(10, 462, 882, 2);
+		
+		btnDijkstra = new Button(this, SWT.NONE);
+		btnDijkstra.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int inicio = (Integer.parseInt(JOptionPane.showInputDialog(g.ListarVertices(false, true)))-1);
+				g.Dijkstra(inicio);
+			}
+		});
+		btnDijkstra.setText("Dijkstra");
+		btnDijkstra.setBounds(46, 485, 141, 33);
+		
+		btnBellmanford = new Button(this, SWT.NONE);
+		btnBellmanford.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int inicio = (Integer.parseInt(JOptionPane.showInputDialog(g.ListarVertices(false, true)))-1);
+				g.BellmanFord(inicio);
+			}
+		});
+		btnBellmanford.setText("Bellman-Ford");
+		btnBellmanford.setBounds(207, 485, 141, 33);
+		
+		btnFloydwarshall = new Button(this, SWT.NONE);
+		btnFloydwarshall.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				g.FloydWarshall();
+			}
+		});
+		btnFloydwarshall.setText("Floyd-Warshall");
+		btnFloydwarshall.setBounds(368, 485, 141, 33);
+		
 	}
 
 	/**
@@ -377,7 +415,7 @@ public class Principal extends Shell {
 	 */
 	protected void createContents() {
 		setText("Grafos");
-		setSize(929, 502);
+		setSize(929, 577);
 
 	}
 
@@ -389,7 +427,7 @@ public class Principal extends Shell {
 	public void preencheTabela1(){
 		int x = 1;
 		table.setItemCount(0);
-		for (String vert : vertices) {
+		for (String vert : Grafo.getVertices()) {
 			TableItem it = new TableItem(table, SWT.NONE);
 			String[] toArray = new String[]{x+"",vert};
 			it.setText(toArray);
@@ -398,119 +436,11 @@ public class Principal extends Shell {
 	}
 	
 	public void preencheTabela2(){
-		table_1.setItemCount(0);
-		for (ArrayList<String> arest : arestas) {
+		table_1.setItemCount(0);	
+		for (ArrayList<Integer> arest : Grafo.getListaArestas()) {
 			TableItem it = new TableItem(table_1, SWT.NONE);
-			String[] toArray = new String[]{arest.get(0),arest.get(1),arest.get(2)};
+			String[] toArray = Grafo.isValorado()? new String[]{Grafo.getVertices().get(arest.get(0))+"",Grafo.getVertices().get(arest.get(1))+"",arest.get(2)+""} : new String[]{Grafo.getVertices().get(arest.get(0))+"",Grafo.getVertices().get(arest.get(1))+""};
 			it.setText(toArray);
 		}
 	}
-	
-	//Matriz de Adjacência ---------------------------------------------------------------------------------------
-	public void matrizAdjacencia(){
-		matrizAd = new int[vertices.size()][vertices.size()];
-		if(orientado){
-		for(int i = 0; i < vertices.size(); i++){
-			for(int j = 0; j < vertices.size(); j++){
-				for (ArrayList<String> arest : arestas) {
-					if(vertices.get(i).equals(arest.get(0)) && vertices.get(j).equals(arest.get(1))){
-						if(valorado){
-							matrizAd[i][j] = Integer.parseInt(arest.get(2));
-						}else{						
-							matrizAd[i][j] = 1;
-						}
-					}
-					
-				}
-			}
-		}
-		}else{
-			for(int i = 0; i < vertices.size(); i++){
-				for(int j = 0; j < vertices.size(); j++){
-					for (ArrayList<String> arest : arestas) {
-						if((vertices.get(i).equals(arest.get(0)) && vertices.get(j).equals(arest.get(1))) || (vertices.get(i).equals(arest.get(1)) && vertices.get(j).equals(arest.get(0)))){
-							if(valorado){
-								matrizAd[i][j] = Integer.parseInt(arest.get(2));
-							}else{						
-								matrizAd[i][j] = 1;
-							}
-						}
-						
-					}
-				}
-			}
-		}
-
-	}
-	
-	// Lista de Incidência --------------------------------------------------------------------------------------
-	public void listaAdjacencia(){
-		ListaAd = new ArrayList<ArrayList<String>>();
-		for (String vert : vertices) {
-			ArrayList<String> vertTemp =  new ArrayList<String>();
-			for (ArrayList<String> arest : arestas) {
-				if(orientado){
-					if(vert.equals(arest.get(0))){
-						vertTemp.add(arest.get(1));
-					}
-				}else{
-					if(vert.equals(arest.get(0))){
-						vertTemp.add(arest.get(1));
-					}
-					if(vert.equals(arest.get(1))){
-						vertTemp.add(arest.get(0));
-					}
-				}
-			}
-			ListaAd.add(vertTemp);
-		}
-	}
-	
-	// Matriz de Incidência ------------------------------------------------------------------------------------------
-	public void MatrizIncidencia(){
-		matrizInc = new int[vertices.size()][arestas.size()];
-		int i = 0;
-		for (String vert : vertices) {			
-			int j = 0;
-			for (ArrayList<String> arest : arestas) {
-				if(orientado){
-					if(vert.equals(arest.get(0))){
-						matrizInc[i][j] = 1;
-					}
-					if(vert.equals(arest.get(1))){
-						matrizInc[i][j] = -1;
-					}
-				}else{
-					if(vert.equals(arest.get(0))){
-						matrizInc[i][j] = 1;
-					}
-					if(vert.equals(arest.get(1))){
-						matrizInc[i][j] = 1;
-					}		
-				}
-				j++;
-			}
-			i++;
-		}
-	}
-	
-	public void Dijkstra(int inicio){
-		ArrayList<Integer> dist = new ArrayList<Integer>();
-		ArrayList<String> anterior = new ArrayList<String>();
-		PriorityQueue<Integer> fila = new PriorityQueue<Integer>();
-		
-		for (int i = 0; i<vertices.size(); i++) {			
-			dist.set(i, Integer.MAX_VALUE);
-			anterior.set(i, null);
-		}
-		dist.set(inicio, 0);
-		fila.addAll(dist);
-		
-		while(!fila.isEmpty()){
-			
-			
-		}
-		
-	}
-		
 }
