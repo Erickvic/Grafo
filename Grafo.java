@@ -2,6 +2,7 @@ package representar;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+import java.util.Random;
 
 import javax.swing.JOptionPane;
 
@@ -21,6 +22,8 @@ public class Grafo {
 	private static ArrayList<Integer> anteriorBF = new ArrayList<Integer>();
 	private static ArrayList<ArrayList<Integer>> distFW = new ArrayList<ArrayList<Integer>>();
 	private static ArrayList<ArrayList<Integer>> anteriorFW = new ArrayList<ArrayList<Integer>>();
+	private static ArrayList<Integer> distPJ = new ArrayList<Integer>();
+	private static ArrayList<Integer> anteriorPJ = new ArrayList<Integer>();
 
 	
 	public void addVertice(String vert){
@@ -190,8 +193,7 @@ public class Grafo {
 			}
 		}
 		mostraFloydWarshall();
-	}
-	
+	}	
 	public void mostraFloydWarshall(){
 		String msg1= "   ";
 		String msg2= "   ";
@@ -215,6 +217,44 @@ public class Grafo {
 		}
 		String msgF = msg1+"\n\n"+msg2;
 		JOptionPane.showMessageDialog(null, msgF);
+	}
+	
+	public void PrimJarnik(){
+		distPJ = new ArrayList<Integer>();
+		anteriorPJ = new ArrayList<Integer>();
+		PriorityQueue<Integer> fila = new PriorityQueue<Integer>();
+		Random random = new Random();
+		int inicio = random.nextInt(vertices.size()-1);
+		for(int i =0; i< vertices.size();i++){
+			distPJ.add(i, Integer.MAX_VALUE/2);
+			anteriorPJ.add(i, null);
+		}
+		distPJ.set(inicio, 0);
+		fila.addAll(distPJ);
+		System.out.println("inicio  "+inicio);
+		while(!fila.isEmpty()){
+			int u = fila.poll();
+			for (ArrayList<Integer> adj : Grafo.getListaAd().get(u)) {
+				if(adj.get(1) < distPJ.get(adj.get(0))){
+					for (Integer queue : fila) {
+						if(queue.equals(adj.get(0))){
+							anteriorPJ.set(adj.get(0), u);
+							distPJ.set(adj.get(0), adj.get(1));
+						}
+					}					
+				}				
+			}
+		}
+		mostraPrimJarnik();
+	}
+	public void mostraPrimJarnik(){
+		String msg= "Vértice | Distâcia | Caminho \n";
+		for(int i =0; i<vertices.size();i++){
+			String path = (anteriorPJ.get(i) != null && !anteriorPJ.get(i).equals(""))? Grafo.getVertices().get(anteriorPJ.get(i)): "-";
+			String distac = (distPJ.get(i) >= Integer.MAX_VALUE/3)? "--": distPJ.get(i)+""; 
+			msg += "   "+Grafo.getVertices().get(i)+"         |       "+distac+"        |        "+path+"\n";
+		}
+		JOptionPane.showMessageDialog(null, msg);
 	}
 	
 	public void LimpaGrafo(){

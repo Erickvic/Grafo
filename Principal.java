@@ -45,6 +45,7 @@ public class Principal extends Shell {
 	private Button btnDijkstra;
 	private Button btnBellmanford;
 	private Button btnFloydwarshall;
+	private Button btnPrimjarnik;
 	
 
 	/**
@@ -238,11 +239,7 @@ public class Principal extends Shell {
 				arestaTemp.add(Integer.parseInt(aresta2)-1);	
 				arestaTemp.add(valor);
 				
-				g.addAresta(arestaTemp);
-				
-//							matrizAdjacencia();
-//							listaAdjacencia();
-//							MatrizIncidencia();
+				g.addAresta(arestaTemp);				
 							
 				btnSim.setEnabled(false);
 				btnSim2.setEnabled(false);
@@ -407,6 +404,16 @@ public class Principal extends Shell {
 		});
 		btnFloydwarshall.setText("Floyd-Warshall");
 		btnFloydwarshall.setBounds(368, 485, 141, 33);
+		
+		btnPrimjarnik = new Button(this, SWT.NONE);
+		btnPrimjarnik.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				g.PrimJarnik();
+			}
+		});
+		btnPrimjarnik.setText("Prim-Jarnik");
+		btnPrimjarnik.setBounds(723, 485, 141, 33);
 		
 	}
 
