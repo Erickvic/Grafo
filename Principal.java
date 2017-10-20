@@ -46,6 +46,7 @@ public class Principal extends Shell {
 	private Button btnBellmanford;
 	private Button btnFloydwarshall;
 	private Button btnPrimjarnik;
+	private Button btnKruskal;
 	
 
 	/**
@@ -413,7 +414,18 @@ public class Principal extends Shell {
 			}
 		});
 		btnPrimjarnik.setText("Prim-Jarnik");
-		btnPrimjarnik.setBounds(723, 485, 141, 33);
+		btnPrimjarnik.setBounds(684, 485, 141, 33);
+		
+		btnKruskal = new Button(this, SWT.NONE);
+		btnKruskal.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				g.Kruskal();
+				preencheTabela2();
+			}
+		});
+		btnKruskal.setText("Kruskal");
+		btnKruskal.setBounds(527, 485, 141, 33);
 		
 	}
 

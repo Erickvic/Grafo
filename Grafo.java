@@ -18,12 +18,22 @@ public class Grafo {
 //	Dijkstra
 	private static ArrayList<Integer> dist = new ArrayList<Integer>();
 	private static ArrayList<Integer> anterior = new ArrayList<Integer>();
+//	Bellman-Ford
 	private static ArrayList<Integer> distBF = new ArrayList<Integer>();
 	private static ArrayList<Integer> anteriorBF = new ArrayList<Integer>();
+//	Floyd-Warshall
 	private static ArrayList<ArrayList<Integer>> distFW = new ArrayList<ArrayList<Integer>>();
 	private static ArrayList<ArrayList<Integer>> anteriorFW = new ArrayList<ArrayList<Integer>>();
+//	Prim-Jarnik
 	private static ArrayList<Integer> distPJ = new ArrayList<Integer>();
 	private static ArrayList<Integer> anteriorPJ = new ArrayList<Integer>();
+	private static ArrayList<Integer> vertsAdd = new ArrayList<Integer>();
+//	Kruskal
+	private static ArrayList<ArrayList<Integer>> Uniao = new ArrayList<ArrayList<Integer>>();
+	private static ArrayList<ArrayList<Integer>> arestAdd = new ArrayList<ArrayList<Integer>>();
+
+	
+	
 
 	
 	public void addVertice(String vert){
@@ -219,41 +229,131 @@ public class Grafo {
 		JOptionPane.showMessageDialog(null, msgF);
 	}
 	
+	public void Kruskal(){
+		Uniao = new ArrayList<ArrayList<Integer>>();
+		arestAdd = new ArrayList<ArrayList<Integer>>();
+		quickSort(listaArestas, 0, listaArestas.size()-1);
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		for(int i = 0; i<vertices.size();i++){
+			temp = new ArrayList<Integer>();
+			for(int j = 0; j<vertices.size();j++){
+				if(i == j){
+					temp.add(i);					
+				}
+			}	
+			Uniao.add(i,temp);			
+		}
+		
+			for (ArrayList<Integer> arest : listaArestas) {
+				
+//					União
+					boolean existe = false;
+					for (Integer vert : Uniao.get(arest.get(0))){
+						if(vert.equals(arest.get(1))){
+							existe = true;
+						}
+						if(!existe){
+							for (Integer v : Uniao.get(arest.get(0))) {
+								Uniao.get(v).add(arest.get(1));
+								addVerts(arest);
+							}
+							for (Integer v : Uniao.get(arest.get(1))) {
+								Uniao.get(v).add(arest.get(0));
+								addVerts(arest);
+							}
+						}
+					}
+			}		
+		mostraKruskal();
+	}
+	public void addVerts(ArrayList<Integer> arest){
+		boolean existe = false;
+		for (ArrayList<Integer> aresAdd : arestAdd) {
+			if(arest.get(0) == aresAdd.get(0) && arest.get(1) == aresAdd.get(1)){
+				existe = true;
+			}
+		}
+		if(!existe){
+			arestAdd.add(arest);
+		}		
+	}
+	public void mostraKruskal(){
+		
+	}
+	
+	public static void quickSort(ArrayList<ArrayList<Integer>> arest, int esquerda, int direita) {
+		int esq = esquerda;
+		int dir = direita;
+		int pivo = arest.get((esq + dir) / 2).get(2);
+		ArrayList<Integer> troca;
+		while (esq <= dir) {
+			while (arest.get(esq).get(2) < pivo) {
+				esq = esq + 1;
+			}
+			while (arest.get(dir).get(2) > pivo) {
+				dir = dir - 1;
+			}
+			if (esq <= dir) {
+				troca = arest.get(esq);
+				arest.set(esq,arest.get(dir));
+				arest.set(dir, troca);
+				esq = esq + 1;
+				dir = dir - 1;
+			}
+		}
+		if (dir > esquerda)
+			quickSort(arest, esquerda, dir);
+		if (esq < direita)
+			quickSort(arest, esq, direita);
+	}
+	
 	public void PrimJarnik(){
 		distPJ = new ArrayList<Integer>();
 		anteriorPJ = new ArrayList<Integer>();
 		PriorityQueue<Integer> fila = new PriorityQueue<Integer>();
+		vertsAdd = new ArrayList<Integer>();
 		Random random = new Random();
 		int inicio = random.nextInt(vertices.size()-1);
+		
 		for(int i =0; i< vertices.size();i++){
 			distPJ.add(i, Integer.MAX_VALUE/2);
 			anteriorPJ.add(i, null);
 		}
 		distPJ.set(inicio, 0);
-		fila.addAll(distPJ);
-		System.out.println("inicio  "+inicio);
-		while(!fila.isEmpty()){
+		fila.add(inicio);
+		vertsAdd.add(inicio);
+			for(int i = 0;i<vertices.size()-1;i++){				
 			int u = fila.poll();
 			for (ArrayList<Integer> adj : Grafo.getListaAd().get(u)) {
-				if(adj.get(1) < distPJ.get(adj.get(0))){
-					for (Integer queue : fila) {
-						if(queue.equals(adj.get(0))){
-							anteriorPJ.set(adj.get(0), u);
-							distPJ.set(adj.get(0), adj.get(1));
-						}
-					}					
-				}				
-			}
+				boolean existe = false;
+				for (Integer queue : vertsAdd) {
+					if(queue.equals(adj.get(0))){
+						existe = true;
+					}
+				}
+				if(!existe){
+					fila.add(adj.get(0));						
+				}
+				if(adj.get(1) < distPJ.get(adj.get(0)) && !existe){
+						anteriorPJ.set(adj.get(0), u);
+						distPJ.set(adj.get(0), adj.get(1));
+						vertsAdd.add(adj.get(0));
+				}								
+			}				
+			
 		}
 		mostraPrimJarnik();
 	}
 	public void mostraPrimJarnik(){
 		String msg= "Vértice | Distâcia | Caminho \n";
+		int custo =0;
 		for(int i =0; i<vertices.size();i++){
-			String path = (anteriorPJ.get(i) != null && !anteriorPJ.get(i).equals(""))? Grafo.getVertices().get(anteriorPJ.get(i)): "-";
-			String distac = (distPJ.get(i) >= Integer.MAX_VALUE/3)? "--": distPJ.get(i)+""; 
-			msg += "   "+Grafo.getVertices().get(i)+"         |       "+distac+"        |        "+path+"\n";
+			String path = (anteriorPJ.get(vertsAdd.get(i)) != null && !anteriorPJ.get(vertsAdd.get(i)).equals(""))? Grafo.getVertices().get(anteriorPJ.get(vertsAdd.get(i))): "-";
+			String distac = (distPJ.get(vertsAdd.get(i)) >= Integer.MAX_VALUE/3)? "--": distPJ.get(vertsAdd.get(i))+""; 
+			msg += "   "+Grafo.getVertices().get(vertsAdd.get(i))+"         |       "+distac+"        |        "+path+"\n";
+			custo += distPJ.get(vertsAdd.get(i));
 		}
+		msg += "\nCusto = "+custo;
 		JOptionPane.showMessageDialog(null, msg);
 	}
 	
